@@ -118,13 +118,58 @@ export default async function approveStep(req: Request, res: Response) {
       const stepRunData = await executeGraphQL(createStepRun, { runId: stepRun.workflow_run.id, stepId: step.id });
       const newStepRunId = stepRunData.data?.insert_step_runs_one?.id;
 
-      if (step.type === 'llm_call') {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        await executeGraphQL(`
-          mutation CompleteStep($stepRunId: uuid!, $output: jsonb) {
-            update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "completed", output: $output}) { id }
+      // Execute based on type with retries
+      let success = false;
+      let attempt = 0;
+      let output: any = null;
+
+      while (!success && attempt < 2) {
+        attempt++;
+        try {
+          if (step.type === 'approval_gate') {
+            await executeGraphQL(`
+              mutation PauseRun($runId: uuid!, $stepRunId: uuid!) {
+                update_workflow_runs_by_pk(pk_columns: {id: $runId}, _set: {status: "paused"}) { id }
+                update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "paused"}) { id }
+              }
+            `, { runId: stepRun.workflow_run.id, stepRunId: newStepRunId });
+            return res.status(200).json({ success: true, message: 'Workflow paused for approval.' });
           }
-        `, { stepRunId: newStepRunId, output: { result: "Mocked LLM Response" } });
+
+          if (step.type === 'llm_call') {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            output = { result: "Mocked LLM Response" };
+          }
+
+          if (step.type === 'http_request') {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            output = { statusCode: 200, body: "External HTTP Success" };
+          }
+          
+          if (step.type === 'conditional_branch') {
+            // Mock conditional check
+            output = { branch_taken: "true", reason: "Previous output matched condition" };
+          }
+
+          // If no exception thrown, mark success
+          success = true;
+          await executeGraphQL(`
+            mutation CompleteStep($stepRunId: uuid!, $output: jsonb) {
+              update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "completed", output: $output}) { id }
+            }
+          `, { stepRunId: newStepRunId, output });
+
+        } catch (err: any) {
+          if (attempt >= 2) {
+            await executeGraphQL(`
+              mutation FailStep($stepRunId: uuid!, $runId: uuid!, $error: String!) {
+                update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "failed", error: $error}) { id }
+                update_workflow_runs_by_pk(pk_columns: {id: $runId}, _set: {status: "failed"}) { id }
+              }
+            `, { stepRunId: newStepRunId, runId: stepRun.workflow_run.id, error: err.message });
+            return res.status(500).json({ success: false, message: 'Workflow failed at step ' + step.id });
+          }
+        }
       }
     }
 
