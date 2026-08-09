@@ -34,6 +34,7 @@ export default async function approveStep(req: Request, res: Response) {
             id
             status
             workflow {
+              id
               organization {
                 org_members(where: {user_id: {_eq: $userId}}) {
                   role
@@ -80,9 +81,59 @@ export default async function approveStep(req: Request, res: Response) {
       now: new Date().toISOString()
     });
 
-    // NOTE: In a real architecture, resuming a paused workflow is tricky in serverless.
-    // You would typically trigger an event or queue a background job here to execute the REMAINING steps.
-    // For this assignment, marking it as running is the primary objective of the approval_gate.
+    // 3. Execute Remaining Steps
+    const remainingStepsQuery = `
+      query GetRemainingSteps($workflowId: uuid!) {
+        workflow_steps(where: {workflow_id: {_eq: $workflowId}}, order_by: {step_order: asc}) {
+          id
+          type
+        }
+      }
+    `;
+    const remainingStepsData = await executeGraphQL(remainingStepsQuery, { workflowId: stepRun.workflow_run.workflow.id });
+    
+    // Check which steps haven't been run yet by querying the step_runs
+    const existingStepRunsQuery = `
+      query GetStepRuns($runId: uuid!) {
+        step_runs(where: {workflow_run_id: {_eq: $runId}}) {
+          step_id
+        }
+      }
+    `;
+    const existingRunsData = await executeGraphQL(existingStepRunsQuery, { runId: stepRun.workflow_run.id });
+    const executedStepIds = existingRunsData.data?.step_runs?.map((r: any) => r.step_id) || [];
+    
+    const steps = remainingStepsData.data?.workflow_steps || [];
+    const pendingSteps = steps.filter((s: any) => !executedStepIds.includes(s.id));
+
+    for (const step of pendingSteps) {
+      // Create Step Run
+      const createStepRun = `
+        mutation CreateStepRun($runId: uuid!, $stepId: uuid!) {
+          insert_step_runs_one(object: {workflow_run_id: $runId, step_id: $stepId, status: "running"}) {
+            id
+          }
+        }
+      `;
+      const stepRunData = await executeGraphQL(createStepRun, { runId: stepRun.workflow_run.id, stepId: step.id });
+      const newStepRunId = stepRunData.data?.insert_step_runs_one?.id;
+
+      if (step.type === 'llm_call') {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        await executeGraphQL(`
+          mutation CompleteStep($stepRunId: uuid!) {
+            update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "completed", output: {"result": "Mocked LLM Response"}}) { id }
+          }
+        `, { stepRunId: newStepRunId });
+      }
+    }
+
+    // 4. Complete Workflow
+    await executeGraphQL(`
+      mutation CompleteRun($runId: uuid!) {
+        update_workflow_runs_by_pk(pk_columns: {id: $runId}, _set: {status: "completed"}) { id }
+      }
+    `, { runId: stepRun.workflow_run.id });
 
     return res.status(200).json({ success: true, message: 'Step approved and workflow resumed.' });
 
