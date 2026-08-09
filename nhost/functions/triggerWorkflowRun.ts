@@ -120,6 +120,16 @@ export default async function triggerWorkflowRun(req: Request, res: Response) {
             // Mock conditional check
             output = { branch_taken: "true", reason: "Previous output matched condition" };
           }
+          
+          if (step.type === 'db_write') {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            output = { status: "success", rows_inserted: 1 };
+          }
+          
+          if (step.type === 'notify') {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            output = { status: "sent", channel: "slack", recipient: "team" };
+          }
 
           // If no exception thrown, mark success
           success = true;
@@ -141,6 +151,7 @@ export default async function triggerWorkflowRun(req: Request, res: Response) {
           }
         }
       }
+    } // END of for-loop
 
     // 4. Complete Workflow & Increment Quota
     await executeGraphQL(`
