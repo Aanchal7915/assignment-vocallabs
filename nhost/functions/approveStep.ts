@@ -121,10 +121,10 @@ export default async function approveStep(req: Request, res: Response) {
       if (step.type === 'llm_call') {
         await new Promise(resolve => setTimeout(resolve, 1500));
         await executeGraphQL(`
-          mutation CompleteStep($stepRunId: uuid!) {
-            update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "completed", output: {"result": "Mocked LLM Response"}}) { id }
+          mutation CompleteStep($stepRunId: uuid!, $output: jsonb) {
+            update_step_runs_by_pk(pk_columns: {id: $stepRunId}, _set: {status: "completed", output: $output}) { id }
           }
-        `, { stepRunId: newStepRunId });
+        `, { stepRunId: newStepRunId, output: { result: "Mocked LLM Response" } });
       }
     }
 
