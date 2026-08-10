@@ -24,7 +24,7 @@ export function AuthForm() {
   const error = isLogin ? signInError : signUpError;
 
   return (
-    <div className="w-full max-w-md bg-white p-10 rounded-xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-200">
+    <div className="w-full max-w-md bg-white p-6 sm:p-10 rounded-xl shadow-[0_2px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-200">
       <div className="flex justify-center mb-6">
         <div className="w-12 h-12 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-sm">AI</div>
       </div>

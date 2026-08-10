@@ -124,14 +124,14 @@ export default function WorkflowBuilderPage() {
   const { Play, Plus, Server, Webhook, Split, ShieldCheck, Cpu, ArrowLeft, RefreshCw, CircleDashed } = require('lucide-react');
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] p-8 font-sans">
+    <div className="min-h-screen bg-[#f4f5f8] p-4 md:p-8 font-sans">
       <div className="max-w-5xl mx-auto">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-slate-900 transition-colors mb-6 text-sm font-medium">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-slate-900 transition-colors mb-4 md:mb-6 text-sm font-medium">
           <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to Dashboard
         </Link>
         
         {/* Header Block */}
-        <div className="bg-white px-8 py-6 rounded-xl shadow-sm border border-slate-200 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white px-4 sm:px-8 py-4 sm:py-6 rounded-xl shadow-sm border border-slate-200 mb-6 md:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 mb-1">{workflow.name}</h1>
             <p className="text-xs font-mono text-slate-400 bg-slate-100 px-2 py-1 rounded inline-block">ID: {workflowId}</p>
@@ -148,12 +148,12 @@ export default function WorkflowBuilderPage() {
 
         {/* Live Run Monitor */}
         {latestRun && (
-          <div className="bg-white border border-slate-200 p-8 rounded-xl mb-8 shadow-sm">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white border border-slate-200 p-4 sm:p-8 rounded-xl mb-6 md:mb-8 shadow-sm">
+            <div className="flex justify-between items-center mb-4 sm:mb-6 pb-4 border-b border-slate-100">
+              <h2 className="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
                 <Server className="w-5 h-5 text-slate-400" /> Execution Logs
               </h2>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+              <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider ${
                 latestRun.status === 'completed' ? 'bg-green-100 text-green-700 border border-green-200' :
                 latestRun.status === 'paused' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
                 latestRun.status === 'failed' ? 'bg-red-100 text-red-700 border border-red-200' :
@@ -169,12 +169,12 @@ export default function WorkflowBuilderPage() {
                 const isPaused = sRun?.status === 'paused';
                 
                 return (
-                  <div key={step.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  <div key={step.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-200 gap-3 sm:gap-0">
                     <span className="font-medium text-slate-700 flex items-center gap-3 text-sm">
-                      <span className="flex items-center justify-center w-6 h-6 rounded bg-white border border-slate-200 text-xs text-slate-500 font-mono shadow-sm">{step.step_order}</span>
+                      <span className="flex items-center justify-center w-6 h-6 rounded bg-white border border-slate-200 text-xs text-slate-500 font-mono shadow-sm shrink-0">{step.step_order}</span>
                       {step.type.replace('_', ' ').toUpperCase()}
                     </span>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
                       {sRun ? (
                         <span className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isPaused ? 'text-yellow-600' : sRun.status === 'completed' ? 'text-green-600' : sRun.status === 'failed' ? 'text-red-600' : 'text-blue-600'}`}>
                           {sRun.status === 'running' && <RefreshCw className="w-3 h-3 animate-spin" />}
@@ -205,13 +205,13 @@ export default function WorkflowBuilderPage() {
         )}
 
         {/* Node Editor Canvas */}
-        <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
+        <div className="bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden">
           {/* Subtle grid background to simulate canvas */}
           <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
           
-          <div className="relative z-10 flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-800">Workflow Definition</h2>
-            <div className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded border border-slate-200 font-medium">Read-Only View</div>
+          <div className="relative z-10 flex items-center justify-between mb-6 md:mb-8 pb-4 border-b border-slate-100">
+            <h2 className="text-base sm:text-lg font-bold text-slate-800">Workflow Definition</h2>
+            <div className="text-[10px] sm:text-xs text-slate-500 bg-slate-100 px-2 sm:px-3 py-1 rounded border border-slate-200 font-medium">Read-Only View</div>
           </div>
           
           <div className="relative z-10 space-y-0 mb-10 flex flex-col items-center">

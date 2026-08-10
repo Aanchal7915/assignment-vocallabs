@@ -121,9 +121,9 @@ export default function DashboardPage() {
   const workflows = data?.org_members[0]?.organization?.workflows || [];
 
   return (
-    <div className="min-h-screen bg-[#f4f5f8] p-8 font-sans">
+    <div className="min-h-screen bg-[#f4f5f8] p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-200">
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <div className="w-8 h-8 rounded bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">AI</div>
             Workflow Dashboard
@@ -144,15 +144,15 @@ export default function DashboardPage() {
           <div className="text-slate-500 animate-pulse font-medium">Loading workflows...</div>
         ) : (
           <>
-            <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex justify-between items-center shadow-sm">
+            <div className="bg-white p-4 rounded-xl border border-slate-200 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">🏢</div>
+                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">🏢</div>
                 <div>
                   <h2 className="font-bold text-slate-800">{data?.org_members?.[0]?.organization?.name || 'Your Organization'}</h2>
                   <p className="text-xs text-slate-500 font-medium">Organization Workspace</p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right w-full sm:w-auto border-t sm:border-0 border-slate-100 pt-3 sm:pt-0">
                 <p className="text-sm font-bold text-slate-700">Usage Quota</p>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
